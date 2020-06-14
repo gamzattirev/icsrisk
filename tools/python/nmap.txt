@@ -1,0 +1,62 @@
+Starting Nmap 7.60 ( https://nmap.org ) at 2019-02-26 16:28 JST
+mass_dns: warning: Unable to determine any DNS servers. Reverse DNS is disabled. Try using --system-dns or specify valid servers with --dns-servers
+Nmap scan report for 192.168.3.5
+Host is up (0.0017s latency).
+Not shown: 987 closed ports
+PORT      STATE SERVICE
+80/tcp    open  http
+135/tcp   open  msrpc
+139/tcp   open  netbios-ssn
+443/tcp   open  https
+445/tcp   open  microsoft-ds
+1723/tcp  open  pptp
+3389/tcp  open  ms-wbt-server
+49152/tcp open  unknown
+49153/tcp open  unknown
+49154/tcp open  unknown
+49155/tcp open  unknown
+49156/tcp open  unknown
+49157/tcp open  unknown
+
+Nmap scan report for 192.168.3.220
+Host is up (0.0020s latency).
+Not shown: 993 closed ports
+PORT     STATE SERVICE
+135/tcp  open  msrpc
+139/tcp  open  netbios-ssn
+443/tcp  open  https
+445/tcp  open  microsoft-ds
+902/tcp  open  iss-realsecure
+912/tcp  open  apex-mesh
+3389/tcp open  ms-wbt-server
+
+Nmap scan report for 192.168.3.250
+Host is up (0.0021s latency).
+Not shown: 990 closed ports
+PORT      STATE SERVICE
+135/tcp   open  msrpc
+139/tcp   open  netbios-ssn
+445/tcp   open  microsoft-ds
+3389/tcp  open  ms-wbt-server
+49152/tcp open  unknown
+49153/tcp open  unknown
+49154/tcp open  unknown
+49155/tcp open  unknown
+49156/tcp open  unknown
+49157/tcp open  unknown
+
+Nmap scan report for 192.168.3.252
+Host is up (0.0013s latency).
+All 1000 scanned ports on 192.168.3.252 are closed
+
+Nmap scan report for 192.168.3.253
+Host is up (0.0015s latency).
+All 1000 scanned ports on 192.168.3.253 are closed
+
+Nmap scan report for 192.168.3.254
+Host is up (0.00073s latency).
+Not shown: 997 closed ports
+PORT    STATE SERVICE
+22/tcp  open  ssh
+139/tcp open  netbios-ssn
+445/tcp open  microsoft-ds
