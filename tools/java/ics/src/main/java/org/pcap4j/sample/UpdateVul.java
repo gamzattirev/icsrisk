@@ -2,36 +2,24 @@ package org.pcap4j.sample;
 
 import java.sql.*;
 import java.util.*;
-
 import javax.net.ssl.SSLContext;
-
 import java.io.*;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.http.*;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-
-import org.pcap4j.sample.HttpClientFactory;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import javax.net.ssl.SSLContext;
 import org.apache.http.Header;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
+import org.json.JSONObject;
 
 public class UpdateVul {
 
@@ -40,12 +28,11 @@ public class UpdateVul {
 	private static final String sql_update2 = "update vul set poc=1 where cve=?";
 	private static final String PCAP_FILE_DIR = "src/main/resources/";
 	private static final String POC_1 = "proof-of-concept";
-	//private static final String POC_2 = "poc";
 	private static final String POC_3 = "exploit";
 	private static final String POC_4 = ".py";
 	private static final String POC_5 = "proofofconcept";
 	private static final String POC_6 = "proof_of_concept";
-	private static final String URL_EXPLOITDB="https://www.exploit-db.com/exploits";
+	private static final String URL_EXPLOITDB="https://www.exploit-db.com/search?cve=";
 	
 	static Connection con = null;
 	static PreparedStatement ps = null;
@@ -147,13 +134,12 @@ public class UpdateVul {
 	
 	private int getPoC(String cve) {
 		
-		HttpGet request = new HttpGet(URL_EXPLOITDB);
-		//CloseableHttpClient httpclient =HttpClients.createDefault();
+		HttpGet request = new HttpGet(URL_EXPLOITDB+cve);
 		CloseableHttpClient httpClient=null;
+		int poc=0;
 		try {
 			RequestConfig requestConfig = RequestConfig.custom()
-                    .setConnectTimeout(1000)          // コネクションタイムアウト
-                    //.setSocketTimeout(10000)        // 通信タイムアウト
+                    .setConnectTimeout(5000)          
                     .build();
 			
 			List<Header> header = new ArrayList<Header>();
@@ -180,10 +166,24 @@ public class UpdateVul {
 			e1.printStackTrace();
 		}
 		HttpResponse response;
+		StringBuilder builder = new StringBuilder();
 		try {
 			response = httpClient.execute(request);
+			int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+            	return poc;
+            }
 			HttpEntity entity = response.getEntity();
-			System.out.println(response.getStatusLine().getStatusCode());
+			InputStream content = entity.getContent();
+	        if (content == null) {
+	        	return poc;
+	        }
+	        BufferedReader reader = new BufferedReader(new InputStreamReader(content));
+            String line;
+            while ((line = reader.readLine()) != null) {
+            	System.out.println(line);
+            	builder.append(line);
+            }
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -191,17 +191,18 @@ public class UpdateVul {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}         
-        
-
-		int poc=0;
+		try {
+			JSONObject json = new JSONObject(builder.toString());
+			int cnt=json.getInt("recordsTotal");     
+			if(cnt>0) {
+				poc=1;
+			}
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 		
 		return poc;
-	}
-
-	private int getRCE(String cve) {
-		int rce = 0;
-
-		return rce;
 	}
 
 	public static void main(String[] args) {
@@ -210,7 +211,9 @@ public class UpdateVul {
 			/*
 			u.getVulInfo();
 			*/
-			u.getPoC("");
+			String cve="2016-9091";
+			int poc=u.getPoC(cve);
+			System.out.println("poc:"+poc);
 		} finally {
 			if (con != null) {
 				try {
