@@ -1,9 +1,37 @@
 package org.pcap4j.sample;
 
 import java.sql.*;
+import java.util.*;
+
+import javax.net.ssl.SSLContext;
+
 import java.io.*;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.http.*;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+
+import org.pcap4j.sample.HttpClientFactory;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.SSLContext;
+import org.apache.http.Header;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.TrustStrategy;
 
 public class UpdateVul {
 
@@ -17,6 +45,8 @@ public class UpdateVul {
 	private static final String POC_4 = ".py";
 	private static final String POC_5 = "proofofconcept";
 	private static final String POC_6 = "proof_of_concept";
+	private static final String URL_EXPLOITDB="https://www.exploit-db.com/exploits";
+	
 	static Connection con = null;
 	static PreparedStatement ps = null;
 	static PreparedStatement ps2 = null;
@@ -114,6 +144,59 @@ public class UpdateVul {
 		}
 		return result;
 	}
+	
+	private int getPoC(String cve) {
+		
+		HttpGet request = new HttpGet(URL_EXPLOITDB);
+		//CloseableHttpClient httpclient =HttpClients.createDefault();
+		CloseableHttpClient httpClient=null;
+		try {
+			RequestConfig requestConfig = RequestConfig.custom()
+                    .setConnectTimeout(1000)          // コネクションタイムアウト
+                    //.setSocketTimeout(10000)        // 通信タイムアウト
+                    .build();
+			
+			List<Header> header = new ArrayList<Header>();
+			header.add(new BasicHeader("User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:77.0)"));
+			header.add(new BasicHeader("Accept","application/json, text/javascript, */*; q=0.01"));
+		    header.add(new BasicHeader("Accept-Language", "en-US,en;q=0.5"));
+		    header.add(new BasicHeader("X-Requested-With","XMLHttpRequest"));
+		    header.add(new BasicHeader("Connection", "close"));
+		    
+			 SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy(){
+		            public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+		                return true;
+		            }}
+		        ).build();
+		        httpClient = HttpClientBuilder.create()
+		                        .setSslcontext(sslContext)
+		                        .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+		                        .setDefaultRequestConfig(requestConfig)
+		                        .setDefaultHeaders(header)
+		                        .build();
+			 
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		HttpResponse response;
+		try {
+			response = httpClient.execute(request);
+			HttpEntity entity = response.getEntity();
+			System.out.println(response.getStatusLine().getStatusCode());
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}         
+        
+
+		int poc=0;
+		
+		return poc;
+	}
 
 	private int getRCE(String cve) {
 		int rce = 0;
@@ -124,7 +207,10 @@ public class UpdateVul {
 	public static void main(String[] args) {
 		try {
 			UpdateVul u = new UpdateVul();
+			/*
 			u.getVulInfo();
+			*/
+			u.getPoC("");
 		} finally {
 			if (con != null) {
 				try {
