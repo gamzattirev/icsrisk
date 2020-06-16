@@ -110,6 +110,10 @@ public class UpdateVul {
 						if (desc.toLowerCase().contains("remote code execution")||desc.contains("RCE")) {
 							result[0] = 1;
 						}
+						if(this.getPoC(cve)==1) {
+							result[1] = 1;
+							return result;
+						}
 						for (JsonNode ref : n.get("cve").get("references").get("reference_data")) {
 							String poc = ref.get("url").asText();
 							for (String keyword : pocs) {
@@ -181,7 +185,6 @@ public class UpdateVul {
 	        BufferedReader reader = new BufferedReader(new InputStreamReader(content));
             String line;
             while ((line = reader.readLine()) != null) {
-            	System.out.println(line);
             	builder.append(line);
             }
 		} catch (ClientProtocolException e) {
@@ -196,6 +199,7 @@ public class UpdateVul {
 			int cnt=json.getInt("recordsTotal");     
 			if(cnt>0) {
 				poc=1;
+				System.out.println(builder.toString());
 			}
             
         } catch (Exception e) {
@@ -208,12 +212,12 @@ public class UpdateVul {
 	public static void main(String[] args) {
 		try {
 			UpdateVul u = new UpdateVul();
-			/*
 			u.getVulInfo();
-			*/
+			/*
 			String cve="2016-9091";
 			int poc=u.getPoC(cve);
 			System.out.println("poc:"+poc);
+			*/
 		} finally {
 			if (con != null) {
 				try {
