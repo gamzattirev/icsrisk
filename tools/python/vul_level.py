@@ -1,5 +1,6 @@
 import mysql.connector
 import calc_risk
+import const
 
 class vul_level:
     __query="select distinct cve from vul where ip_addr=%s and poc=1 and (attack_vector='N' or attack_vector='A') and rce=1 and privilege='N'"
@@ -17,7 +18,7 @@ class vul_level:
             host='localhost',
             port='3306',
             user='root',
-            password='',
+            password=const.password,
             database='ics'
         )
 

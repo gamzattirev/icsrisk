@@ -1,6 +1,7 @@
 import csv
 import mysql.connector
 import vul_level
+import const
 
 query="INSERT INTO risk_level(ip_addr,damage,vul,security,host) VALUES (%s,%s,%s,%s,%s)"
 
@@ -8,7 +9,7 @@ conn = mysql.connector.connect(
     host='localhost',
     port='3306',
     user='root',
-    password='',
+    password=const.password,
     database='ics'
 )
 

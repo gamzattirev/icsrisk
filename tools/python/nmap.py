@@ -1,8 +1,9 @@
 import mysql.connector
+import const
 
 
-file='nmap.txt'
-src='192.168.5.221'
+file='192.168.2.txt'
+src='192.168.2.99'
 
 query="INSERT INTO packet(srcip,dstip,dstport,service)  values(%s,%s,%s,%s)"
 
@@ -10,7 +11,7 @@ conn = mysql.connector.connect(
     host='localhost',
     port='3306',
     user='root',
-    password='',
+    password=const.password,
     database='ics'
 )
 

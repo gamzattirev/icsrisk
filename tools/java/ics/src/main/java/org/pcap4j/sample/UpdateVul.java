@@ -138,7 +138,8 @@ public class UpdateVul {
 	
 	private int getPoC(String cve) {
 		
-		HttpGet request = new HttpGet(URL_EXPLOITDB+cve);
+		String cve_exploitdb=cve.split("-")[1];
+		HttpGet request = new HttpGet(URL_EXPLOITDB+cve_exploitdb);
 		CloseableHttpClient httpClient=null;
 		int poc=0;
 		try {
