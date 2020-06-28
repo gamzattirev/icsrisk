@@ -8,14 +8,13 @@ import org.pcap4j.core.PcapHandle.TimestampPrecision;
 import org.pcap4j.core.PcapNativeException;
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.Packet;
-import org.pcap4j.packet.Packet.Header;
 import org.pcap4j.packet.IpV4Packet.IpV4Header;
 import java.net.Inet4Address;
 import org.pcap4j.packet.namednumber.IpNumber;
 import org.pcap4j.packet.TcpPacket.TcpHeader;
 import org.pcap4j.packet.namednumber.TcpPort;
-import java.sql.*;
 import org.pcap4j.sample.ProtocolResolver;
+import java.sql.*;
 import org.pcap4j.sample.Const;
 
 @SuppressWarnings("javadoc")
@@ -24,7 +23,7 @@ public class ReadPacketToDB {
 	private static final int COUNT = 100;
 
 	private static final String PCAP_FILE_KEY = ReadPacketToDB.class.getName() + ".pcapFile";
-	private static final String PCAP_FILE_DIR = System.getProperty(PCAP_FILE_KEY, "src/main/resources/");
+	private static final String PCAP_FILE_DIR = System.getProperty(PCAP_FILE_KEY, "src/main/resources/pcap/");
 	private static final String sql0 = "truncate table packet";
 	private static final String sql = "INSERT INTO packet(srcip,dstip,srcport,dstport,protocol,service) values(?, ?, ?, ?, ?, ?)";
 
@@ -39,7 +38,11 @@ public class ReadPacketToDB {
 		PreparedStatement ps = null;
 		Statement stmt = null;
 		
-		String truncate=args[0];
+		String truncate="";
+		
+		if(args.length>0) {
+			truncate=args[0];
+		}
 		
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
@@ -81,7 +84,12 @@ public class ReadPacketToDB {
 						try {
 							ipv4Header = (IpV4Header) payload.getHeader();
 						} catch (Exception e) {
-							ipv4Header = (IpV4Header)payload.getPayload().getHeader();
+							try {
+								ipv4Header = (IpV4Header)payload.getPayload().getHeader();
+							}catch(Exception e2) {
+								e2.printStackTrace();
+								continue;
+							}
 						}
 						try {
 							tcpHeader = (TcpHeader) payload.getPayload().getHeader();

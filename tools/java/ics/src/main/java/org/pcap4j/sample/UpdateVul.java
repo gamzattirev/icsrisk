@@ -24,9 +24,12 @@ import org.json.JSONObject;
 public class UpdateVul {
 
 	private static final String sql = "select cve from vul";
+	private static final String sql_ip = "select cve from vul where ip_addr=?";
 	private static final String sql_update = "update vul set rce=1 where cve=?";
 	private static final String sql_update2 = "update vul set poc=1 where cve=?";
-	private static final String PCAP_FILE_DIR = "src/main/resources/";
+	private static final String sql_update3 = 
+			"update vul set attack_com=?, attack_vector=?, privilege=?, user_interact=?,availability=?, integrity=? where cve=?";
+	private static final String PCAP_FILE_DIR = "src/main/resources/nvd/";
 	private static final String POC_1 = "proof-of-concept";
 	private static final String POC_3 = "exploit";
 	private static final String POC_4 = ".py";
@@ -37,6 +40,9 @@ public class UpdateVul {
 	static Connection con = null;
 	static PreparedStatement ps = null;
 	static PreparedStatement ps2 = null;
+	static PreparedStatement ps3 = null;
+	static PreparedStatement ps_ip = null;
+	
 	String[] pocs = { POC_1, POC_3 , POC_4, POC_5, POC_6};
 
 	UpdateVul() {
@@ -46,6 +52,8 @@ public class UpdateVul {
 			con = DriverManager.getConnection("jdbc:mysql://localhost/ics", "root", Const.DBPASS);
 			ps = con.prepareStatement(sql_update);
 			ps2 = con.prepareStatement(sql_update2);
+			ps3 = con.prepareStatement(sql_update3);
+			ps_ip = con.prepareStatement(sql_ip);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -53,11 +61,17 @@ public class UpdateVul {
 		}
 	}
 
-	private void getVulInfo() {
+	private void getVulInfo(String ip) {
 		Statement stmt = null;
 		try {
-			stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(sql);
+			ResultSet rs =null;
+			if(ip.isEmpty()) {
+				stmt = con.createStatement();
+				rs = stmt.executeQuery(sql);
+			} else {
+				ps_ip.setString(1, ip);
+				rs = ps_ip.executeQuery();
+			}
 			while (rs.next()) {
 				String cve = rs.getString("cve");
 				int[] result = this.readNVD(cve);
@@ -105,6 +119,43 @@ public class UpdateVul {
 						if (!cve_j.equals(cve)) {
 							continue;
 						}
+						
+						
+						String attackComplexity = n.get("impact").get("baseMetricV3").get("cvssV3").get("attackComplexity").asText();
+						String attackVector = n.get("impact").get("baseMetricV3").get("cvssV3").get("attackVector").asText();
+						String privilegesRequired = n.get("impact").get("baseMetricV3").get("cvssV3").get("privilegesRequired").asText();
+						String userInteraction = n.get("impact").get("baseMetricV3").get("cvssV3").get("userInteraction").asText();
+						String integrityImpact = n.get("impact").get("baseMetricV3").get("cvssV3").get("integrityImpact").asText();
+						String availabilityImpact = n.get("impact").get("baseMetricV3").get("cvssV3").get("availabilityImpact").asText();
+						
+						if(attackComplexity.equals("LOW")) {
+							attackComplexity="L";
+							ps3.setString(1,attackComplexity);
+						}
+						if(attackVector.equals("NETWORK")) {
+							attackVector="N";
+							ps3.setString(2,attackVector);
+						}
+						if(privilegesRequired.equals("NONE")) {
+							privilegesRequired="N";
+							ps3.setString(3,privilegesRequired);
+						}
+						if(userInteraction.equals("NONE")) {
+							userInteraction="N";
+							ps3.setString(4,userInteraction);
+						}
+						if(integrityImpact.equals("HIGH")) {
+							integrityImpact="H";
+							ps3.setString(5,integrityImpact);
+						}
+						if(availabilityImpact.equals("HIGH")) {
+							availabilityImpact="H";
+							ps3.setString(6,availabilityImpact);
+						}
+						
+						ps3.setString(7,cve);
+						ps3.executeUpdate();
+						
 						String desc = n.get("cve").get("description").get("description_data").get(0).get("value")
 								.asText();
 						if (desc.toLowerCase().contains("remote code execution")||desc.contains("RCE")) {
@@ -211,14 +262,13 @@ public class UpdateVul {
 	}
 
 	public static void main(String[] args) {
+		String ip="";
+		if(args.length>0) {
+			ip=args[0];
+		}
 		try {
 			UpdateVul u = new UpdateVul();
-			u.getVulInfo();
-			/*
-			String cve="2016-9091";
-			int poc=u.getPoC(cve);
-			System.out.println("poc:"+poc);
-			*/
+			u.getVulInfo(ip);
 		} finally {
 			if (con != null) {
 				try {

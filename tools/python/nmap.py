@@ -3,7 +3,7 @@ import const
 
 
 file='192.168.2.txt'
-src='192.168.2.99'
+src='192.168.5.89'
 
 query="INSERT INTO packet(srcip,dstip,dstport,service)  values(%s,%s,%s,%s)"
 

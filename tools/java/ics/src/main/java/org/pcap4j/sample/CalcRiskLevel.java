@@ -347,13 +347,13 @@ public class CalcRiskLevel {
 			if(remote>RISK_LEVEL) {
 				remote=RISK_LEVEL;
 			}
-			/*
+			
 			System.out.println("damage level:"+damage);
 			System.out.println("software vulnerability level:"+vul);
 			System.out.println("vulnerable communication level:"+com);
 			System.out.println("remote access level:"+remote);
 			System.out.println("security level:"+security);
-			*/
+			
 			double totalRiskLevel=(double)(vul+damage+com+remote-security)/MAX_RISK_LEVEL;
 			System.out.println("Risk level:"+totalRiskLevel);
 			

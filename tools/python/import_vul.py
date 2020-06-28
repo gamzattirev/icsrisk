@@ -37,9 +37,9 @@ for file in files:
         header = next(reader)
         for row in reader:
             try:
-                ip_addr =row[0]
-                cve = row[11]
-                cvss = row[4]
+                ip_addr =row[15]
+                cve = row[1]
+                cvss = row[2]
                 print(ip_addr,cve, cvss)
 
                 cur.execute(query, (cve, cvss,ip_addr))
